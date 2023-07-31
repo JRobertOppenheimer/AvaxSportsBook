@@ -1,0 +1,39 @@
+{
+  "scripts": {
+    "test": "npx hardhat test",
+    "build": "npx hardhat compile",
+    "size": "npx hardhat size-contracts",
+    "lint": "npx prettier --write contracts/**/*.sol"
+  },
+  "devDependencies": {
+    "@matterlabs/hardhat-zksync-deploy": "^0.6.3",
+    "@matterlabs/hardhat-zksync-solc": "^0.3.16",
+    "@nomiclabs/hardhat-ethers": "^2.0.5",
+    "@nomiclabs/hardhat-waffle": "^2.0.3",
+    "@openzeppelin/contracts": "^4.7.0",
+    "chai": "^4.3.6",
+    "ethereum-waffle": "^4.0.10",
+    "ethers": "5.7.2",
+    "hardhat": "^2.14.0",
+    "hardhat-contract-sizer": "^2.5.1",
+    "husky": "^8.0.1",
+    "prettier": "^2.6.2",
+    "prettier-plugin-solidity": "^1.0.0-beta.19",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4",
+    "zksync-web3": "^0.14.3"
+  },
+  "dependencies": {
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
+    "@rari-capital/solmate": "^6.4.0",
+    "chai-as-promised": "7.1.1",
+    "dotenv": "^16.0.1",
+    "eth-crypto": "^2.5.0",
+    "expect.js": "^0.3.1",
+    "node": "^16.20.0",
+    "react": "^18.2.0",
+    "truffle-flattener": "^1.2.11",
+    "web3-eth-personal": "^1.8.1"
+  },
+  "version": "0.0.0"
+}
