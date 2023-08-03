@@ -41,12 +41,11 @@ function BookiePage() {
     const interval1 = setInterval(() => {
       findValues();
     }, 1000);
-
     return () => {
       clearInterval(interval1);
     };
   }, [bettingContract, oracleContract, tokenContract]);
-
+//  ttt  
   async function wdBook() {
     await bettingContract.withdrawBook(sharesToSell); 
   }
@@ -62,12 +61,14 @@ function BookiePage() {
   }
 
   async function findValues() {
+ // const findValues = useCallback(() => {
     let _unusedCapital =
       Number((await bettingContract.margin(0)) || "0") / 10000;
     setUnusedCapital(_unusedCapital);
 
     let _usedCapital = Number((await bettingContract.margin(1)) || "0") / 10000;
     setUsedCapital(_usedCapital);
+    console.log(tokenAmount, "tokens");
 
     let _betCapital = Number((await bettingContract.margin(2)) || "0") / 10000;
     setBetCapital(_betCapital);

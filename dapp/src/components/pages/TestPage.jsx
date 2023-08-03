@@ -11,14 +11,10 @@ import TeamTable from "../blocks/TeamTable2";
 import { Link } from "react-router-dom";
 
 function TestPage() {
-  const {
-    oracleContract,
-    bettingContract,
-    account,  } = useAuthContext();
+  const { oracleContract, bettingContract, account } = useAuthContext();
 
   document.title = "Test Page";
-
-
+//  
   const [showDecimalOdds, setShowDecimalOdds] = useState(false);
   const [scheduleString, setScheduleString] = useState(
     Array(32).fill("check later...: n/a: n/a")
@@ -50,11 +46,35 @@ function TestPage() {
     };
   }, [bettingContract, oracleContract]);
 
- // findValues();
+  let [odds0, setOdds0] = useState([
+    957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957,
+    957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957,
+    957, 957,
+  ]);
 
-  function switchOdds() {
-    setShowDecimalOdds(!showDecimalOdds);
-  }
+  let [odds1, setOdds1] = useState([
+    957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957,
+    957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957,
+    957, 957,
+  ]);
+
+  let odds999 = 0;
+  let oddsTot = [odds0, odds1];
+
+  useEffect(() => {
+    for (let ii = 0; ii < 32; ii++) {
+      if (oddsVector) odds999 = Number(oddsVector[ii]);
+      odds0[ii] = odds999 || 0;
+      odds1[ii] = Math.floor(1000000 / (odds999 + 50) - 1) || 0;
+    }
+    setOdds0(odds0);
+    setOdds1(odds1);
+  }, [oddsVector]);
+
+  useEffect(() => {
+    let _teamSplit = scheduleString.map((s) => (s ? s.split(":") : undefined));
+    setTeamSplit(_teamSplit);
+  }, [scheduleString]);
 
   async function voteNofn() {
     console.log(voteNo, "voteNo");
@@ -68,7 +88,6 @@ function TestPage() {
   }
 
   async function findValues() {
-
     let _yesVotes = Number(await oracleContract.votes(0)) || "0";
     setVoteYes(_yesVotes);
 
@@ -86,7 +105,7 @@ function TestPage() {
 
     let _oddsvector = (await oracleContract.showPropOdds()) || [];
     setOddsVector(_oddsvector);
-
+    
     let _outcomes = (await oracleContract.showPropResults()) || [];
     setOutcomes(_outcomes);
 
@@ -116,11 +135,10 @@ function TestPage() {
     let _tokens = oc ? oc.tokens : "0";
     setTokens(_tokens);
 
-
     let sctring = await oracleContract.showSchedString();
     setScheduleString(sctring);
   }
-// test
+
   function getMoneyLine(decOddsi) {
     let moneyline = 1;
     if (decOddsi < 1000) {
@@ -134,8 +152,10 @@ function TestPage() {
     }
     return moneyline;
   }
-//  
-  let outhx = "1";
+
+  function switchOdds() {
+    setShowDecimalOdds(!showDecimalOdds);
+  }
 
   function getOutcome(outcomei) {
     let outx = "lose";
@@ -148,9 +168,8 @@ function TestPage() {
     return outx;
   }
 
-  let statusWord = "nta";
   function reviewStatusWord(revStatusi) {
-    statusWord = "na";
+    let statusWord = "na";
     if (revStatusi === 0) {
       statusWord = "init";
     } else if (revStatusi === 10) {
@@ -167,45 +186,11 @@ function TestPage() {
 
   function needToVote(lastPropVote) {
     let needtovote = true;
-    if (Number(lastPropVote) === Number(propNumber) || (Number(tokens) === 0)) {
+    if (Number(lastPropVote) === Number(propNumber) || Number(tokens) === 0) {
       needtovote = false;
-    } 
+    }
     return needtovote;
   }
-
-
-  let [odds0, setOdds0] = useState([
-    957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957,
-    957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957,
-    957, 957,
-  ]);
-
-  let [odds1, setOdds1] = useState([
-    957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957,
-    957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957, 957,
-    957, 957,
-  ]); 
-
-  let odds999 = 0;
-
-  useEffect(() => {
-    for (let ii = 0; ii < 32; ii++) {
-      if (oddsVector) odds999 = Number(oddsVector[ii]);
-      odds0[ii] = odds999 || 0;
-      odds1[ii] = Math.floor(1000000 / (odds999 + 50) - 1) || 0;
-    }
-  setOdds0(odds0);
-  setOdds1(odds1);
-}, []);
-
-
-  let oddsTot = [odds0, odds1];
-
-  useEffect(() => {
-    let _teamSplit = scheduleString.map((s) => (s ? s.split(":") : undefined));
-    setTeamSplit(_teamSplit);
-  }, [scheduleString]);
-
 
   return (
     <div>
@@ -314,7 +299,7 @@ function TestPage() {
                 flexDirection="row"
                 justifyContent="space-between"
               ></Flex>
-             
+
               <Flex justifyContent="left">
                 <Text size="14px" color="#ffffff">
                   Active Epoch: {currW4}
@@ -326,59 +311,61 @@ function TestPage() {
                 justifyContent="space-between"
               ></Flex>
             </Box>
-
             <Flex
               mt="5px"
               flexDirection="row"
               justifyContent="flex-start"
               alignItems="center"
             >
-              
               {needToVote(voteTracker) ? (
                 <Box>
-                <button
-                  style={{
-                    backgroundColor: "black",
-                    borderRadius: "5px",
-                    padding: "4px",
-                    //borderRadius: "1px",
-                    cursor: "pointer",
-                    color: "yellow",
-                    border: "1px solid #ffff00",
-                  }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    voteNofn();
-                  }}
-                >
-                  Vote No
-                </button>
-                <Text>" "</Text>
-                <button
-                  style={{
-                    backgroundColor: "black",
-                    borderRadius: "5px",
-                    padding: "4px",
-                    //borderRadius: "1px",
-                    cursor: "pointer",
-                    color: "yellow",
-                    border: "1px solid #ffff00",
-                  }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    voteYesfn();
-                  }}
-                >
-                  Vote Yes
-                </button>
+                  <button
+                    style={{
+                      backgroundColor: "black",
+                      borderRadius: "5px",
+                      padding: "4px",
+                      //borderRadius: "1px",
+                      cursor: "pointer",
+                      color: "yellow",
+                      border: "1px solid #ffff00",
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      voteNofn();
+                    }}
+                  >
+                    Vote No
+                  </button>
+                  <Text>" "</Text>
+                  <button
+                    style={{
+                      backgroundColor: "black",
+                      borderRadius: "5px",
+                      padding: "4px",
+                      //borderRadius: "1px",
+                      cursor: "pointer",
+                      color: "yellow",
+                      border: "1px solid #ffff00",
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      voteYesfn();
+                    }}
+                  >
+                    Vote Yes
+                  </button>
                 </Box>
-              ) : <Text size="14px" className="style"> You Can't Vote</Text>}
-              
+              ) : (
+                <Text size="14px" className="style">
+                  {" "}
+                  You Can't Vote
+                </Text>
+              )}
             </Flex>
-           
             <Box mb="10px" mt="10px">
               <Text size="14px" className="style">
-                No Votes: {Number(voteNo)} Yes Votes: {Number(voteYes).toLocaleString()}
+                No Votes: {Number(voteNo)} Yes Votes:{" "}
+                {Number(voteYes).toLocaleString()}
               </Text>
             </Box>
             <Box mb="10px" mt="10px">
@@ -434,10 +421,10 @@ function TestPage() {
           }}
         ></Flex>
         <Box mb="10px" mt="10px">
-              <Text size="14px" className="style">
-                ReviewStatus: {reviewStatusWord(reviewStatus)}
-              </Text>
-            </Box>
+          <Text size="14px" className="style">
+            ReviewStatus: {reviewStatusWord(reviewStatus)}
+          </Text>
+        </Box>
 
         <Box>
           {" "}
@@ -467,7 +454,7 @@ function TestPage() {
                 getMoneyLine={getMoneyLine}
                 outcomev={outcomes}
                 getOutcome={getOutcome}
-                revStatus = {reviewStatus}
+                revStatus={reviewStatus}
               />
             </Flex>{" "}
           </Box>
