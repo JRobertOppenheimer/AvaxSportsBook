@@ -5,7 +5,7 @@ const offset = (_dateo.getTimezoneOffset() * 60 * 1000 - 7200000) / 1000;
 var hourOffset,
   _hourSolidity,
   _timestamp,
-  nextStart = 1690659274,
+  nextStart,
   _date,
   _hour,
   hash1,
@@ -52,13 +52,13 @@ describe("Betting", function () {
 
   describe("set up contract", async () => {
     it("Get Oracle Contract Address", async () => {
+      _timestamp = (
+        await ethers.provider.getBlock(await ethers.provider.getBlockNumber())
+      ).timestamp;
+      nextStart = _timestamp - ((_timestamp - 1690588800) % 604800) + 7 * 86400;
+      console.log(nextStart, "nextstart");
       console.log(`Oracle Address is ${oracle.address}`);
-    });
-
-    it("Authorize Oracle Token", async () => {
       await token.approve(oracle.address, 560n * million);
-    });
-    it("Deposit Tokens in Oracle Contract2", async () => {
       await oracle.connect(owner).depositTokens(560n * million);
     });
   });
@@ -150,9 +150,9 @@ describe("Betting", function () {
           nextStart,
         ],
         [
-          999, 10500, 500, 919, 909, 800, 510, 739, 620, 960, 650, 688, 970,
-          730, 699, 884, 520, 901, 620, 764, 851, 820, 770, 790, 730, 690, 970,
-          760, 919, 720, 672, 800,
+          999, 500, 500, 919, 909, 800, 510, 739, 620, 960, 650, 688, 970, 730,
+          699, 884, 520, 901, 620, 764, 851, 820, 770, 790, 730, 690, 970, 760,
+          919, 720, 672, 800,
         ]
       );
       receipt = await result.wait();
@@ -338,13 +338,13 @@ describe("Betting", function () {
       console.log(`acct2 Bal ${userBalanceAcct2}`);
       console.log(`acct3 Bal ${userBalanceAcct3}`);
 
-      assert.equal(bookiePool, "2.9917", "mustBe equal");
+      assert.equal(bookiePool, "2.9735", "mustBe equal");
       assert.equal(bettorLocked, "0", "Must be equal");
       assert.equal(bookieLocked, "0", "Must be equal");
-      assert.equal(oracleBal, "0.030415", "Must be equal");
-      assert.equal(ethbal, "4.969585", "Must be equal");
+      assert.equal(oracleBal, "0.031325", "Must be equal");
+      assert.equal(ethbal, "4.968675", "Must be equal");
       assert.equal(userBalanceAcct2, "0.695", "Must be equal");
-      assert.equal(userBalanceAcct3, "1.2828", "Must be equal");
+      assert.equal(userBalanceAcct3, "1.3001", "Must be equal");
 
       console.log(`gas0 on bet ${gas0}`);
       console.log(`gas1 on bet ${gas1}`);

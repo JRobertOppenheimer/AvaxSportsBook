@@ -11,7 +11,7 @@ var _hour;
 var result;
 var receipt;
 var gasUsed = 0;
-var nextStart = 1690659274;
+var nextStart;
 var gas0, gas1;
 
 const { assert } = require("chai");
@@ -45,24 +45,6 @@ describe("Betting", function () {
         "gwei"
       );
       console.log(`tokenBal is ${tokBala} 1e9`);
-    });
-
-    it("checkHour", async () => {
-      _hourSolidity = await oracle.hourOfDay();
-      console.log(`hour in EVM ${_hourSolidity}`);
-      hourOffset = 0;
-      if (_hourSolidity > 12) {
-        hourOffset = 36 - _hourSolidity;
-      } else if (_hourSolidity < 12) {
-        hourOffset = 12 - _hourSolidity;
-      }
-      console.log(`hourAdj ${hourOffset}`);
-      await helper.advanceTimeAndBlock(hourOffset * secondsInHour);
-      _timestamp = (
-        await ethers.provider.getBlock(await ethers.provider.getBlockNumber())
-      ).timestamp;
-      var nextStart = 1688218363 + 7 * 86400;
-      console.log(`time is ${nextStart}`);
     });
   });
 
@@ -128,7 +110,7 @@ describe("Betting", function () {
       _timestamp = (
         await ethers.provider.getBlock(await ethers.provider.getBlockNumber())
       ).timestamp;
-      console.log(`time is ${nextStart}`);
+      nextStart = _timestamp - ((_timestamp - 1690588800) % 604800) + 7 * 86400;
       result = await oracle.initPost(
         [
           "NFL:ARI:LAC",
@@ -199,9 +181,9 @@ describe("Betting", function () {
           nextStart,
         ],
         [
-          999, 10500, 500, 919, 909, 800, 510, 739, 620, 960, 650, 688, 970,
-          730, 699, 884, 520, 901, 620, 764, 851, 820, 770, 790, 730, 690, 970,
-          760, 919, 720, 672, 800,
+          999, 500, 500, 919, 909, 800, 510, 739, 620, 960, 650, 688, 970, 730,
+          699, 884, 520, 901, 620, 764, 851, 820, 770, 790, 730, 690, 970, 760,
+          919, 720, 672, 800,
         ]
       );
       receipt = await result.wait();
