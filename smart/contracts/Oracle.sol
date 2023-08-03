@@ -27,6 +27,8 @@ contract Oracle {
   uint32 public tokensInContract;
   // 0 yes votes, 1 no votes, epoch, reviewStatus, propNumber,
   uint32[2] public votes;
+  uint32 public gameStart;
+  uint32 public minSubmit;
   //   0 total equity Tokens in Oracle, 1 feesPerLiqTracker
   uint64[2] public feeData;
     // slots are 0 for the initial favorite, 1 for initial underdog
@@ -123,8 +125,7 @@ contract Oracle {
     // this requirement makes sure a post occurs only if there is not a current post under consideration
     require(reviewStatus == INIT_STATE0, "Already under Review");
     for (uint256 i = 0; i < 32; i++) {
-      uint realOdds = _decimalOdds[i] % 10000;
-      require(realOdds < MAX_DEC_ODDS_INIT && realOdds > MIN_DEC_ODDS_INIT);
+      require(_decimalOdds[i] < MAX_DEC_ODDS_INIT && _decimalOdds[i] > MIN_DEC_ODDS_INIT);
     }
     // require((_starts[0] - block.timestamp) < 604800 && (_starts[0] - block.timestamp) > 86400);
     propOdds = _decimalOdds;
@@ -143,13 +144,14 @@ contract Oracle {
     // requires new init data posted
     require(reviewStatus == INIT_PROC_NEXT, "wrong data");
     // can only send after 12 noon GMT
-   // require(hourOfDay() < HOUR_PROCESS, "too soon");
+    require(hourOfDay() < HOUR_PROCESS, "too soon");
     // only sent if 'null' vote does not win
     if (votes[0] > votes[1]) {
       // sends to the betting contract
       bettingContract.transmitInit(propOdds, propStartTimes);
       emit VoteOutcome(true, betEpochOracle, propNumber, votes[0], votes[1]); 
     reviewStatus = ACTIVE_STATE;
+    gameStart = propStartTimes[0] - ((propStartTimes[0] - 1687564800) % 604800);
     } else {
       burn();
     }
@@ -159,7 +161,7 @@ contract Oracle {
   }
 
   function updatePost(uint16[32] memory _decimalOdds) external {
-    require(reviewStatus == ACTIVE_STATE, "wrong sequence");
+    require(reviewStatus == ACTIVE_STATE && gameStart > block.timestamp, "wrong sequence");
     post();
     for (uint256 i = 0; i < 32; i++) {
       uint realOdds = _decimalOdds[i] % 10000;
@@ -217,11 +219,13 @@ contract Oracle {
     reset();
   }
 
-  function concentrationFactor(
-    uint32 _concentrationLim
+  function adjParams(
+    uint32 _concentrationLim,
+    uint32 _minSubmit
   ) external returns (bool) {
     require(adminStruct[msg.sender].tokens >= (MIN_SUBMIT * 2));
     bettingContract.adjustParams(_concentrationLim);
+    minSubmit = _minSubmit;
     emit ParamsPosted(_concentrationLim);
     return true;
   }
@@ -364,10 +368,10 @@ contract Oracle {
         uint256(feeData[1] - adminStruct[msgsender].initFeePool)
     );
     _ethOut0 = (votesPerEpoch * ethTot) / userTokens;
-    uint256 ploughBack = ethTot - _ethOut0;
+    uint256 ploughBack =  ethTot - _ethOut0;
     feeData[1] += uint64(ploughBack / uint256(feeData[0]));
     (bool success, ) = payable(msgsender).call{value: (_ethOut0 * 1e6)}("");
-    // payable(msg.sender).transfer(amt256);
+    // payable(msg.sender).transfer(_ethOut0 * 1e6);
     require(success, "eth payment failed");
   }
 

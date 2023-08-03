@@ -15,7 +15,6 @@ import "./ConstantsBetting.sol";
 contract Betting {
   // for emergency shutdown
   uint8[2] public paused;
-  uint16 public minSubmit;
   uint16[32] public odds; 
   //0 betEpoch, 1 concentration Limit, 2 nonce, 3 first Start Time
   uint32[4] public params;
@@ -120,12 +119,9 @@ contract Betting {
     uint64[4] memory betDatav = decodeNumber(_matchNumber);
     int64 betPayoff = int64(uint64(odds[_matchNumber]));
     //require(startTime[_matchNumber] > block.timestamp, "game started or not playing");
-    bool isMMA = (betPayoff > 10000) ? true : false;
     betPayoff = (betPayoff % 10000);
     if (_team0or1 == 0) {
       betPayoff = (_betAmt * betPayoff) / 1000;
-    } else if (isMMA) {
-      betPayoff = (_betAmt * 1e6 * MMA_ADJ) / (ODDS_FACTOR + betPayoff) / 100000;
     } else {
       betPayoff = (_betAmt * 1e6 * FOOTBALL_ADJ) / (ODDS_FACTOR + betPayoff) / 100000;
     }
@@ -230,6 +226,7 @@ contract Betting {
   function fundBettor() external payable {
     // removes unneeded decimals for internal accounting
     uint64 amt = uint64(msg.value / UNITS_TRANS14);
+    require(amt >= 1e4, "need at least one avax");
     userStruct[msg.sender].userBalance += amt;
     emit Funding(msg.sender, amt, params[0], 0);
   }
@@ -239,6 +236,7 @@ contract Betting {
     // require(block.timestamp < params[3], "only prior to first event");
     uint256 netinvestment = (msg.value / UNITS_TRANS14);
     uint64 _shares = 0;
+    require(netinvestment >= 1e4, "need at least one avax");
     if (margin[0] > 0) {
       _shares = uint64(
         (netinvestment * uint256(margin[3])) / uint256(margin[0])
@@ -390,7 +388,7 @@ contract Betting {
     params[1] = _maxPos;
   }
 
-  /** @dev this allows token holders to freeze contests that have bad odds
+  /** @dev this allows   token holders to freeze contests that have bad odds
    * it takes a day to input new odds, so if they are really off this can limit the damage
    * @param _badmatches is the first of two potential paused matches
    */
